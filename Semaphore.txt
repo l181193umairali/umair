@@ -1,0 +1,94 @@
+
+#include<stdio.h>
+#include<sys/wait.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<string.h>
+#include<pthread.h>
+#include <semaphore.h>
+void *patient(void *potentialcpatient)
+{
+     int i=0;
+     i = *(int*) potentialcpatient;
+     i++;
+  //pthread_exit((void*)i);
+}
+int test()
+{
+   int x=rand()%2;
+   if(x==0)
+   {
+    return 0;
+    
+   }
+   if(x==1)
+   {
+   return 1;
+   }
+}
+int main(int argc, char *argv[])
+{
+   sem_t coronaPatient;
+   sem_t fluPatient;
+   sem_init(&coronaPatient,0,1);
+   sem_init(&fluPatient,0,1);
+   int n=0;
+   printf("enter no of threads:\n");
+   scanf("%d",&n);  
+ int ret = 0;
+ int potentialCpatient=0;
+   pthread_t thread[n]; 
+   pid_t tid;
+   int i;
+          int corona_patient=0;
+           int flue_patient=0;
+   for(i = 0; i < n; i++) 
+   {
+       ret = pthread_create(&thread[i], NULL, patient,(void*)&potentialCpatient); 
+
+       if(ret ==-1) 
+       {
+           printf("pthread error!\n");
+       }
+       else
+       {
+         pthread_join(thread[i],(void**)&potentialCpatient);
+       }    
+   }
+      int k=0;
+      i=0;
+      while(i<n)
+      {
+       k=test();
+       potentialCpatient--;
+      // if patuent is infected       
+       if (k==1)
+       {
+         //signal
+        sem_post(&coronaPatient); 
+        corona_patient++;
+        
+    if(test()==1)
+    {
+    sem_wait(&coronaPatient);
+    } 
+   }
+      else
+       {
+        sem_post(&fluPatient);
+        flue_patient++;  
+       }
+        i++;
+    }
+       printf("Total No of corona patients = %d  \n", corona_patient);
+       printf("Total No of Flue patients   = %d  \n",flue_patient);
+       sem_destroy(&coronaPatient);
+       sem_destroy(&fluPatient);
+}
+       
+       
+       
+       
+       
+       
+       
